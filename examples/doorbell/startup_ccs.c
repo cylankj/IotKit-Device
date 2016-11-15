@@ -35,7 +35,7 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef cc3200
 #ifndef USE_TIRTOS	/* if project uses TI-RTOS then no need to include startup file */
 //*****************************************************************************
 //
@@ -216,9 +216,6 @@ NmiSR(void)
 static void
 FaultISR(void)
 {
-    //
-    // Enter an infinite loop.
-    //
     while(1)
     {
     }
@@ -262,3 +259,4 @@ IntDefaultHandler(void)
     }
 }
 #endif
+#endif // cc3200

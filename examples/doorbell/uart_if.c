@@ -35,7 +35,7 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef cc3200
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -170,3 +170,4 @@ int Report(char *pcFormat, ...)
 #endif
   return iRet;
 }
+#endif // cc3200

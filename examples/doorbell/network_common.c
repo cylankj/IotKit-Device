@@ -35,7 +35,7 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
-
+#ifdef cc3200
 #include <stdlib.h>
 
 // Simplelink includes 
@@ -106,3 +106,4 @@ _SlEventPropogationStatus_e sl_Provisioning_WlanEventHdl(SlWlanEvent_t *apEventI
 //*****************************************************************************
 // SimpleLink Asynchronous Event Handlers -- End
 //*****************************************************************************
+#endif // cc3200

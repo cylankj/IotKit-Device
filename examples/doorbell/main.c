@@ -378,28 +378,6 @@ static int _app_on_iotk_p2p_data_outgoing(int (*p2p_send)(const char *buf, unsig
     return 0;
 }
 
-static void _app_on_sl_event(struct SL_EVENT_MSG *e)
-{
-    LOGLI("on sl event = %d", e->id);
-
-    switch (e->id)
-    {
-    case SL_EVENT_STA_CONNECTED:
-    case SL_EVENT_STA_DISCONNECTED:
-    case SL_EVENT_STA_IP_LEASED:
-    case SL_EVENT_STA_IP_RELEASED:
-        break;
-    case SL_EVENT_WLAN_CONNECTED:
-        break;
-    case SL_EVENT_WLAN_CONNECT_FAILED:
-        break;
-    case SL_EVENT_WLAN_DISCONNECT:
-        break;
-    case SL_EVENT_WLAN_IP_ACQUIRED:
-        break;
-    }
-}
-
 static void _app_p2p_task(void *unused)
 {
     UNUSED(unused);
@@ -421,6 +399,43 @@ static void _app_p2p_get_timestamp(struct timeval *tv)
 #endif
 }
 
+static void _app_on_sl_event(void *p)
+{
+    struct SL_EVENT_MSG *e = (struct SL_EVENT_MSG *)p;
+
+    LOGLI("on sl event = %d", e->id);
+
+    switch (e->id)
+    {
+    case SL_EVENT_STA_CONNECTED:
+    case SL_EVENT_STA_DISCONNECTED:
+    case SL_EVENT_STA_IP_LEASED:
+    case SL_EVENT_STA_IP_RELEASED:
+        break;
+    case SL_EVENT_WLAN_CONNECTED:
+        break;
+    case SL_EVENT_WLAN_CONNECT_FAILED:
+        break;
+    case SL_EVENT_WLAN_DISCONNECT:
+        break;
+    case SL_EVENT_WLAN_IP_ACQUIRED:
+        break;
+    }
+
+    free(e);
+}
+
+static void _sl_event_callback(struct SL_EVENT_MSG *e)
+{
+    struct SL_EVENT_MSG *dup;
+
+    dup = (struct SL_EVENT_MSG *)malloc(sizeof(struct SL_EVENT_MSG));
+    if (NULL != dup)
+    {
+        memcpy(dup, e, sizeof(struct SL_EVENT_MSG));
+        iotk_spawn(_app_on_sl_event, dup);
+    }
+}
 
 void application_main(void *unused)
 {
@@ -433,7 +448,7 @@ void application_main(void *unused)
     memset(app_get(), 0, sizeof(_app));
 
     sl_init();
-    sl_set_delegate(_app_on_sl_event);
+    sl_set_delegate(_sl_event_callback);
     sl_start();
 
     cfg_init();

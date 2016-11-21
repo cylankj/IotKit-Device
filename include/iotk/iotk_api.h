@@ -246,17 +246,53 @@ int iotk_cfg_set(int cfg, int len, ...);
  */
 int iotk_cfg_get(int cfg, int len, void *val);
 
+/** @fn int iotk_start(void)
+ *  @brief start iotkit message loop, start network activity
+ *  @return error code
+ *  @retval 0 success
+ */
 int iotk_start(void);
 
+/** @fn int iotk_stop(void)
+ *  @brief stop iotkit message loop, stop network activity
+ *  @return error code
+ *  @retval 0 success
+ */
 int iotk_stop(void);
 
+/** @fn int iotk_run(int timeout_ms)
+ *  @brief wait until iotkit message loop active or timeout interval elapses.
+ *  @param timeout_ms [in] timeout in millisecond
+ *  @return error code
+ *  @retval 0 message loop active
+ *  @retval IOTK_RES_TIMEOUT wait timeout
+ */
 int iotk_run(int timeout_ms);
 
 typedef void (*IOTK_SPAWN_ENTRY)(void *);
+
+/** @fn int iotk_spawn(IOTK_SPAWN_ENTRY entry, void *arg)
+ *  @brief 	run entry callback function in iotkit task context
+ *  @param entry [in] callback function
+ *  @param arg [in] argument pass to callback function
+ *  @return error code
+ *  @retval 0 success
+ */
 int iotk_spawn(IOTK_SPAWN_ENTRY entry, void *arg);
 
+/** @fn int iotk_wakeup(void)
+ *  @brief 	wake up iotkit message loop, interrupt iotk_run blocking state.
+ *  @return error code
+ *  @retval 0 success
+ */
 int iotk_wakeup(void);
 
+/** @fn struct IOTK_IUNKNOWN *iotk_query_interface(const struct IOTK_GUID *iid)
+ *  @brief 	query interface from interface id
+ *  @param iid [in] interface id
+ *  @return error code
+ *  @retval 0 success
+ */
 struct IOTK_IUNKNOWN *iotk_query_interface(const struct IOTK_GUID *iid);
 
 #ifdef __cplusplus

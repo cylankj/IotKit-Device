@@ -587,9 +587,9 @@ int sl_wlan_get_bssid(unsigned char bssid[6])
 unsigned int sl_wlan_get_ip(void)
 {
 #ifdef cc3200
-	return sl_get()->device_ip;
+    return sl_get()->device_ip;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -598,7 +598,7 @@ unsigned int sl_wlan_get_gateway(void)
 #ifdef cc3200
     return sl_get()->gateway_ip;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -607,7 +607,7 @@ unsigned int sl_wlan_get_dns(void)
 #ifdef cc3200
     return sl_get()->dns_ip;
 #else
-	return 0;
+    return 0;
 #endif
 }
 
@@ -869,7 +869,7 @@ static void sl_ping_callback_wrapper(SlPingReport_t *r)
 
     if (r != (SlPingReport_t *)w->ping_report && NULL != w->ping_report && NULL != r)
     {
-    	memcpy(w->ping_report, r, sizeof(SlPingReport_t));
+        memcpy(w->ping_report, r, sizeof(SlPingReport_t));
     }
 
     //LOGL(LOGGER_LEVEL_DEBUG | LOGGER_LOCAL, "ping ip=%d.%d.%d.%d complete=%d/%d minrt=%d, maxrt=%d, avgrt=%d, testtime=%d",
@@ -888,8 +888,8 @@ static void sl_ping_callback_wrapper(SlPingReport_t *r)
 #endif
 
 int sl_netapp_ping(unsigned int ip_be, unsigned int interval_ms,
-		unsigned char pkt_count, unsigned short pkt_size,
-		unsigned short timeout_ms, SL_PING_CALLBACK callback, struct SL_PING_REPORT *report)
+        unsigned char pkt_count, unsigned short pkt_size,
+        unsigned short timeout_ms, SL_PING_CALLBACK callback, struct SL_PING_REPORT *report)
 {
 #ifdef cc3200
     struct SL_STATE *w = sl_get();
@@ -1097,7 +1097,8 @@ void SimpleLinkGeneralEventHandler(SlDeviceEvent_t *pDevEvent)
     case SL_DEVICE_GENERAL_ERROR_EVENT:
         msg.u.general_event.u.general.status = pDevEvent->EventData.deviceEvent.status;
         msg.u.general_event.u.general.sender = pDevEvent->EventData.deviceEvent.sender;
-        SL_FIRE_EVENT(w, &msg);        break;
+        SL_FIRE_EVENT(w, &msg);
+        break;
     case SL_DEVICE_DRIVER_ASSERT_ERROR_EVENT:
     case SL_DEVICE_DRIVER_TIMEOUT_CMD_COMPLETE:
     case SL_DEVICE_DRIVER_TIMEOUT_SYNC_PATTERN:

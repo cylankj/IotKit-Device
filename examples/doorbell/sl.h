@@ -47,7 +47,8 @@ struct SL_EVENT_MSG
 
         struct
         {
-            char bssid[SL_BSSID_LEN_MAX];
+        	char *ssid;
+            char *bssid;
         } wlan_connected;
 
         struct

@@ -390,9 +390,10 @@ static void _app_p2p_get_timestamp(struct timeval *tv)
 
 static void _app_on_sl_event(void *p)
 {
+	struct APP_CONTEXT *c = app_get();
     struct SL_EVENT_MSG *e = (struct SL_EVENT_MSG *)p;
 
-    LOGLI("on sl event = %d", e->id);
+    //LOGLI("on sl event = %d", e->id);
 
     switch (e->id)
     {
@@ -402,12 +403,31 @@ static void _app_on_sl_event(void *p)
     case SL_EVENT_STA_IP_RELEASED:
         break;
     case SL_EVENT_WLAN_CONNECTED:
+    	FLAG_SET(FLAG_STA_CONNECTED, c->flags);
+    	LOGLI("Connected to AP: BSSID=%02X:%02X:%02X:%02X:%02X:%02X",
+    			e->u.wlan_connected.bssid[0],
+    			e->u.wlan_connected.bssid[1],
+    			e->u.wlan_connected.bssid[2],
+    			e->u.wlan_connected.bssid[3],
+    			e->u.wlan_connected.bssid[4],
+    			e->u.wlan_connected.bssid[5]);
         break;
-    case SL_EVENT_WLAN_CONNECT_FAILED:
-        break;
+    case SL_EVENT_WLAN_USER_INITIATED_DISCONNECT:
+    	FLAG_CLR(FLAG_STA_CONNECTED | FLAG_IP_ACQUIRED, c->flags);
+    	break;
     case SL_EVENT_WLAN_DISCONNECT:
+    	FLAG_CLR(FLAG_STA_CONNECTED | FLAG_IP_ACQUIRED, c->flags);
         break;
     case SL_EVENT_WLAN_IP_ACQUIRED:
+    	if (!FLAG_ISSET(FLAG_IP_ACQUIRED, c->flags))
+    	{
+        	FLAG_SET(FLAG_IP_ACQUIRED, c->flags);
+        	LOGLI("IP Acquired: IP=%d.%d.%d.%d Gateway=%d.%d.%d.%d DNS=%d.%d.%d.%d",
+        			SPLIT_IP(e->u.wlan_ip.ip_be),
+        			SPLIT_IP(e->u.wlan_ip.gw_be),
+        			SPLIT_IP(e->u.wlan_ip.dns_be));
+        	iotk_start();
+    	}
         break;
     }
 

@@ -54,15 +54,19 @@
 #endif
 
 #ifndef MIN
-#define MIN(a, b)           ((a) > (b) ? (b) : (a))
+#define MIN(a, b)                       ((a) > (b) ? (b) : (a))
 #endif
 
 #ifndef ARRAY_LENGTH
-#define ARRAY_LENGTH(x)     (sizeof(x) / sizeof((x)[0]))
+#define ARRAY_LENGTH(x)                 (sizeof(x) / sizeof((x)[0]))
 #endif
 
 #ifndef ALIGN_N
-#define ALIGN_N(x, n)           (((long)x + ((n) - 1)) & ~((n) - 1))
+#define ALIGN_N(x, n)                   (((long)x + ((n) - 1)) & ~((n) - 1))
+#endif
+
+#ifndef SPLIT_IP
+#define SPLIT_IP(x)                     (x >> 24), ((x >> 16) & 0xFF), ((x >> 8) & 0xFF), (x & 0xFF)
 #endif
 
 extern void platform_init(void);

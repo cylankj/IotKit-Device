@@ -709,6 +709,7 @@ void sl_wlan_policy_set_long_sleep(int interval)
     int res;
     unsigned short policy[4] = {0, 0, interval, 0};
 
+    UNUSED(res);
     ASSERT(sl_get()->role != SL_ROLE_STOP);
 
     if (0 != interval)
@@ -971,6 +972,8 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
                 pWlanEvent->EventData.STAandP2PModeWlanConnected.ssid_len);
         memcpy(w->bssid, pWlanEvent->EventData.STAandP2PModeWlanConnected.bssid, SL_BSSID_LENGTH);
         msg.id = SL_EVENT_WLAN_CONNECTED;
+        msg.u.wlan_connected.ssid = w->ssid;
+        msg.u.wlan_connected.bssid = w->bssid;
         SL_FIRE_EVENT(w, &msg);
         break;
     }
@@ -998,8 +1001,6 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pWlanEvent)
         w->connected = 0;
         w->device_ip = SL_WLAN_INVALID_ADDRESS;
         w->gateway_ip = SL_WLAN_INVALID_ADDRESS;
-        //memset(w->ssid, 0, sizeof(w->ssid));
-        //memset(w->bssid, 0, sizeof(w->bssid));
         break;
     }
 

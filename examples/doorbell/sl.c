@@ -96,7 +96,7 @@ int sl_start(void)
     w->gateway_ip = SL_WLAN_INVALID_ADDRESS;
 
     res = sl_Start(NULL, NULL, NULL);
-    //LOGLV("sl_Start() = %d" , res);
+    LOGLV("sl_Start() = %d" , res);
     w->role = res;
 
 #if 0

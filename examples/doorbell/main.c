@@ -38,26 +38,15 @@
 #define FLAG_IOTK_CONNECTED         0x00000020
 #define FLAG_IOTK_LOGGED_ON         0x00000080
 
-struct APP_IOTK_CONTEXT
-{
-    int flags;
-    char last_p2p_caller[IOTK_CID_LENGTH + 1];
-    unsigned int last_p2p_call_id;
-    struct IOTK_INTERFACE_DEVICE *server;
-};
-
-struct APP_SL_CONTEXT
-{
-    int flags;
-};
-
 struct APP_CONTEXT
 {
     //
     // do not modify context owned by other task without lock
     //
-    struct APP_SL_CONTEXT sl_ctx;
-    struct APP_IOTK_CONTEXT iotk_ctx;
+    int flags;
+    char last_p2p_caller[IOTK_CID_LENGTH + 1];
+    unsigned int last_p2p_call_id;
+    struct IOTK_INTERFACE_DEVICE *server;
 };
 
 struct IOTK_SYNC_MSG
@@ -96,7 +85,7 @@ static void _app_get_dp_writer(struct IWSTREAM *s, void *ctx)
 }
 
 
-static void _app_do_get_dp(struct APP_IOTK_CONTEXT *d)
+static void _app_do_get_dp(struct APP_CONTEXT *d)
 {
     // get data from server
     d->server->get_dp(&d->server->iunknown, 
@@ -137,7 +126,7 @@ static void _app_set_dp_writer(struct IWSTREAM *s, void *ctx)
     MsgpackPackString(s, buffer, n);
 }
 
-static void _app_do_set_dp(struct APP_IOTK_CONTEXT *d)
+static void _app_do_set_dp(struct APP_CONTEXT *d)
 {
     // get data from server
     d->server->set_dp(&d->server->iunknown, 
@@ -146,7 +135,7 @@ static void _app_do_set_dp(struct APP_IOTK_CONTEXT *d)
         _app_set_dp_writer, NULL);
 }
 
-static void _app_on_login_ack(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
+static void _app_on_login_ack(struct APP_CONTEXT *d, struct IOTK_EVENT *e)
 {
     if (e->u.logged_in.err_code != 0)
     {
@@ -162,7 +151,7 @@ static void _app_on_login_ack(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
     _app_do_get_dp(d);
 }
 
-static void _app_on_get_dp_ack(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
+static void _app_on_get_dp_ack(struct APP_CONTEXT *d, struct IOTK_EVENT *e)
 {
     unsigned int i;
     unsigned int ii;
@@ -203,7 +192,7 @@ static void _app_on_get_dp_ack(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
     }
 }
 
-static void _app_on_set_dp_ack(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
+static void _app_on_set_dp_ack(struct APP_CONTEXT *d, struct IOTK_EVENT *e)
 {
     int res;
     unsigned int i;
@@ -238,7 +227,7 @@ static void _app_on_set_dp_ack(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
     }
 }
 
-static void _app_on_iotk_connected(struct APP_IOTK_CONTEXT *c, struct IOTK_EVENT *e)
+static void _app_on_iotk_connected(struct APP_CONTEXT *c, struct IOTK_EVENT *e)
 {
     c->flags |= FLAG_IOTK_CONNECTED;
     c->server->login(&c->server->iunknown, 1, IOTK_TEST_PID, IOTK_TEST_SN, IOTK_TEST_SIG, IOTK_TEST_CID);
@@ -246,7 +235,7 @@ static void _app_on_iotk_connected(struct APP_IOTK_CONTEXT *c, struct IOTK_EVENT
     LOGLI("iotk connected, send login request");
 }
 
-static void _app_on_iotk_disconnected(struct APP_IOTK_CONTEXT *d, struct IOTK_EVENT *e)
+static void _app_on_iotk_disconnected(struct APP_CONTEXT *d, struct IOTK_EVENT *e)
 {
     // clear all flags
     d->flags = 0;
@@ -254,7 +243,7 @@ static void _app_on_iotk_disconnected(struct APP_IOTK_CONTEXT *d, struct IOTK_EV
     LOGLI("iotk disconnected");
 }
 
-static void _app_on_iotk_p2p_setup(struct APP_IOTK_CONTEXT *c, struct IOTK_EVENT *e)
+static void _app_on_iotk_p2p_setup(struct APP_CONTEXT *c, struct IOTK_EVENT *e)
 {
     // store call information
     strncpy(c->last_p2p_caller, e->u.p2p_setup.caller, IOTK_CID_LENGTH);
@@ -268,12 +257,12 @@ static void _app_on_iotk_p2p_setup(struct APP_IOTK_CONTEXT *c, struct IOTK_EVENT
     c->server->p2p_setup_ack(&c->server->iunknown, e->u.p2p_setup.seq + 1, e->u.p2p_setup.caller);
 }
 
-static void _app_on_iotk_p2p_sdp(struct APP_IOTK_CONTEXT *c, struct IOTK_EVENT *e)
+static void _app_on_iotk_p2p_sdp(struct APP_CONTEXT *c, struct IOTK_EVENT *e)
 {
     iotk_p2p_update_peer_addr(e->u.p2p_sdp.sdp);
 }
 
-static void _app_on_iotk_p2p_disconnect(struct APP_IOTK_CONTEXT *c, struct IOTK_EVENT *e)
+static void _app_on_iotk_p2p_disconnect(struct APP_CONTEXT *c, struct IOTK_EVENT *e)
 {
     c->last_p2p_caller[0] = 0;
     c->last_p2p_call_id = 0;
@@ -281,7 +270,7 @@ static void _app_on_iotk_p2p_disconnect(struct APP_IOTK_CONTEXT *c, struct IOTK_
 
 static void _app_on_iotk_event(void *sender, struct IOTK_EVENT *e)
 {
-    struct APP_IOTK_CONTEXT *c = &app_get()->iotk_ctx;
+    struct APP_CONTEXT *c = app_get();
     LOGLD("get iotk event id=%d", e->id);
 
     switch (e->id)
@@ -323,11 +312,11 @@ static void _app_do_send_sdp_update(void *p)
 {
     struct APP_CONTEXT *ctx = app_get();
     struct IOTK_SYNC_MSG *msg = (struct IOTK_SYNC_MSG *)p;
-    struct IOTK_INTERFACE_DEVICE *srv = app_get()->iotk_ctx.server;
+    struct IOTK_INTERFACE_DEVICE *srv = app_get()->server;
 
     srv->p2p_sdp_update((struct IOTK_IUNKNOWN *)srv, 0, 
-        ctx->iotk_ctx.last_p2p_caller, 
-        ctx->iotk_ctx.last_p2p_call_id, 
+        ctx->last_p2p_caller,
+        ctx->last_p2p_call_id,
         (struct P2P_SDP *)msg->ap);
 
     iotk_event_set(&msg->signal);
@@ -448,10 +437,22 @@ void application_main(void *unused)
     memset(app_get(), 0, sizeof(_app));
 
     sl_init();
-    sl_set_delegate(_sl_event_callback);
     sl_start();
 
     cfg_init();
+
+    // reset wifi config
+    sl_reset();
+    sl_wlan_role_set(SL_ROLE_STA);
+
+    // set wifi profile
+    sl_wlan_profile_remove(0xFF);
+    sl_wlan_profile_add(SSID_NAME, SECURITY_KEY);
+
+    // restart simplelink
+    sl_stop();
+    sl_set_delegate(_sl_event_callback);
+    sl_start();
 
     // simulation of cfg_load
     cfg_set(CFG_ID_CID, 0, IOTK_TEST_CID, strlen(IOTK_TEST_CID));
@@ -464,10 +465,10 @@ void application_main(void *unused)
     server_addr = cfg_get_ptr(CFG_ID_MSG_SERVER_ADDR);
     iotk_cfg_set(IOTK_CFG_SERVER_ADDR, strlen(server_addr), server_addr);
     iotk_cfg_set(IOTK_CFG_EVENT_CALLBACK, sizeof(void *), _app_on_iotk_event);
-    iotk_start();
+    //iotk_start();
 
     // get and save server interface
-    app_get()->iotk_ctx.server = (struct IOTK_INTERFACE_DEVICE *)
+    app_get()->server = (struct IOTK_INTERFACE_DEVICE *)
         iotk_query_interface(&iotk_iid_device);
 
     //

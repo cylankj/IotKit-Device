@@ -68,6 +68,7 @@ enum IOTK_EVENT_ID
     IOTK_EVENT_SET_DP_REQ,
     IOTK_EVENT_SET_DP_ACK,
     IOTK_EVENT_DEL_DP_ACK,
+    IOTK_EVENT_MSG_TRANSMIT,
     IOTK_EVENT_P2P_SETUP,
     IOTK_EVENT_P2P_SDP,
     IOTK_EVENT_P2P_DISCONNECT,
@@ -161,6 +162,15 @@ struct IOTK_EVENT
             unsigned int count;
             struct IRSTREAM *irs;
         } get_dp_ack, set_dp_ack;
+
+        struct
+        {
+            const char *caller;
+            unsigned long long seq;
+            unsigned long long sn;
+            const unsigned char *msg;
+            unsigned int msg_len;
+        } msg_transmit;
 
         struct
         {

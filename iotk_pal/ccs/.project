@@ -79,7 +79,7 @@
 	<variableList>
 		<variable>
 			<name>FREERTOS_ROOT</name>
-			<value>file:/D:/Code/dangdang/project/cc3200sdk/FreeRTOS</value>
+			<value>file:/e:/Code/dangdang/project/cc3200sdk/FreeRTOS</value>
 		</variable>
 	</variableList>
 </projectDescription>

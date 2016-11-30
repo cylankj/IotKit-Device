@@ -121,7 +121,7 @@ int sl_wlan_profile_add(const char *ssid, const char *psk);
 
 int sl_wlan_profile_get(char *ssidout, int size);
 
-int sl_wlan_get_ap_ssid(char *ssid, unsigned short len);
+int sl_wlan_get_device_ssid(char *ssid, unsigned short len);
 
 int sl_wlan_initialize_ap(const char *ssid, unsigned char security, const char *psk);
 

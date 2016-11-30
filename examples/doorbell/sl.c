@@ -26,6 +26,10 @@
 #define SL_ERROR(...)
 #endif
 
+#ifndef UNUSED
+#define UNUSED(x)                               ((x) = (x))
+#endif
+
 #ifndef SPLIT_IP
 #define SPLIT_IP(x)                             (x >> 24), ((x >> 16) & 0xFF), ((x >> 8) & 0xFF), (x & 0xFF)
 #endif
@@ -289,7 +293,7 @@ void sl_init()
     w->gateway_ip = SL_WLAN_INVALID_ADDRESS;
     w->delegate = NULL;
 
-    //LOGLI("sl: init");
+    LOGLI("sl: init");
 #endif
 }
 
@@ -533,7 +537,7 @@ int sl_wlan_initialize_ap(const char *ssid, unsigned char security, const char *
     return 0;
 }
 
-int sl_wlan_get_ap_ssid(char *ssid, unsigned short len)
+int sl_wlan_get_device_ssid(char *ssid, unsigned short len)
 {
 #ifdef cc3200
     int res;
@@ -757,11 +761,8 @@ int sl_wlan_rx_stats(void)
     osi_Sleep(2000);
     sl_WlanRxStatStop();
     res = sl_WlanRxStatGet(&rxStatResp , 0);
-    if (0 == res)
-    {
-        LOGLI("AvarageDataCtrlRssi: %d", rxStatResp.AvarageDataCtrlRssi);
-        LOGLI("AvarageMgMntRssi:    %d", rxStatResp.AvarageMgMntRssi);
-    }
+	LOGLI("sl_WlanRxStatGet=%d AvarageDataCtrlRssi=%d AvarageMgMntRssi=%d",
+			res, rxStatResp.AvarageDataCtrlRssi, rxStatResp.AvarageMgMntRssi);
     return res;
 #else
     return -1;

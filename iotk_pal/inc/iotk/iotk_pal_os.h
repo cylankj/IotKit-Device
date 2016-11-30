@@ -74,6 +74,21 @@ iotk_res_t iotk_event_delete(iotk_event_t* pSyncObj);
 iotk_res_t iotk_event_set(iotk_event_t* pSyncObj);
 
 /*!
+	\brief 		This function generates a sync signal for the object.
+				from ISR context.
+
+	All suspended threads waiting on this sync object are resumed
+
+	\param		pSyncObj	-	pointer to the sync object control block
+
+	\return 	upon successful signalling the function should return 0
+				Otherwise, a negative value indicating the error code shall be returned
+	\note		the function is called from ISR context
+	\warning
+*/
+iotk_res_t iotk_event_set_from_isr(iotk_event_t* pSyncObj);
+
+/*!
 	\brief 	This function waits for a sync signal of the specific sync object
 
 	\param	pSyncObj	-	pointer to the sync object control block

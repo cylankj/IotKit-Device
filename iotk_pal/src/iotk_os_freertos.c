@@ -10,7 +10,7 @@
 
 #include "iotk/iotk_pal.h"
 
-static portBASE_TYPE _xHigherPriorityTaskWoken = pdFALSE;
+extern portBASE_TYPE xHigherPriorityTaskWoken;
 
 iotk_res_t iotk_event_create(iotk_event_t* pSyncObj)
 {
@@ -60,6 +60,30 @@ iotk_res_t iotk_event_set(iotk_event_t* pSyncObj)
     }
 
     return IOTK_RES_OK;
+}
+
+iotk_res_t iotk_event_set_from_isr(iotk_event_t* pSyncObj)
+{
+	//Check for NULL
+	if(NULL == pSyncObj)
+	{
+		return IOTK_RES_INVALID_PARAMS;
+	}
+	xHigherPriorityTaskWoken = pdFALSE;
+	if(pdTRUE == xSemaphoreGiveFromISR( *pSyncObj, &xHigherPriorityTaskWoken ))
+	{
+		if( xHigherPriorityTaskWoken )
+		{
+			taskYIELD ();
+		}
+		return IOTK_RES_OK;
+	}
+	else
+	{
+		//In case of Semaphore, you are expected to get this if multiple sem
+		// give is called before sem take
+		return IOTK_RES_OK;
+	}
 }
 
 iotk_res_t iotk_event_wait(iotk_event_t* pSyncObj, iotk_time_t Timeout)
@@ -220,7 +244,7 @@ iotk_res_t iotk_msgq_write(iotk_msgq_t* pMsgQ, void* pMsg, iotk_time_t Timeout)
         return IOTK_RES_INVALID_PARAMS;
     }
 
-    if (pdPASS == xQueueSendFromISR((QueueHandle_t)*pMsgQ, pMsg, &_xHigherPriorityTaskWoken))
+    if (pdPASS == xQueueSendFromISR((QueueHandle_t)*pMsgQ, pMsg, &xHigherPriorityTaskWoken))
     {
         taskYIELD();
         return IOTK_RES_OK;

@@ -116,6 +116,16 @@
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/uart_if.h</locationURI>
 		</link>
+		<link>
+			<name>udma_if.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/udma_if.c</locationURI>
+		</link>
+		<link>
+			<name>udma_if.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/udma_if.h</locationURI>
+		</link>
 	</linkedResources>
 	<variableList>
 		<variable>

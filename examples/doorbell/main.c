@@ -17,6 +17,7 @@
 
 #include "iotk/iotk_api.h"
 #include "iotk/iotk_p2p.h"
+#include "iotk/iotk_spi_cc3200.h"
 
 #include "iotk/iotk_pal.h"
 
@@ -370,11 +371,16 @@ static int _app_on_iotk_p2p_data_outgoing(int (*p2p_send)(const char *buf, unsig
 static void _app_p2p_task(void *unused)
 {
     UNUSED(unused);
-
     for (;;)
     {
         iotk_p2p_runloop();
     }
+}
+
+static void _app_spi_task(void *unused)
+{
+    UNUSED(unused);
+    iotk_cc3200_fh8610_module_task_loop();
 }
 
 static void _app_p2p_get_timestamp(struct timeval *tv)
@@ -449,6 +455,7 @@ static void _sl_event_callback(struct SL_EVENT_MSG *e)
 void application_main(void *unused)
 {
     iotk_task_t p2p_task;
+    iotk_task_t spi_task;
     const char *server_addr;
     
     UNUSED(unused);
@@ -490,6 +497,9 @@ void application_main(void *unused)
     // get and save server interface
     app_get()->server = (struct IOTK_INTERFACE_DEVICE *)
         iotk_query_interface(&iotk_iid_device);
+
+	// create spi thread
+    iotk_task_create(_app_spi_task, NULL, 512, NULL, 1, &spi_task);
 
     //
     // initialize p2p component

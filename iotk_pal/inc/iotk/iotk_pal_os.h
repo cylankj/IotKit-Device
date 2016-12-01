@@ -1,6 +1,10 @@
 #ifndef __IOTK_PAL_OS_H__
 #define	__IOTK_PAL_OS_H__
 
+#ifdef CONFIG_IOTK_PAL_USE_OSI
+#include "iotk_pal_osi.h"
+#else
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -315,5 +319,7 @@ void iotk_sleep(unsigned int MilliSecs);
 #ifdef  __cplusplus
 }
 #endif // __cplusplus
+
+#endif // CONFIG_IOTK_PAL_USE_OSI
 
 #endif // __IOTK_PAL_OS_H__

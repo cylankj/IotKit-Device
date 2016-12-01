@@ -41,14 +41,14 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>src/iotk_os_freertos.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/src/iotk_os_freertos.c</locationURI>
-		</link>
-		<link>
 			<name>src/iotk_os_linux.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src/iotk_os_linux.c</locationURI>
+		</link>
+		<link>
+			<name>src/iotk_os_osi.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/src/iotk_os_osi.c</locationURI>
 		</link>
 		<link>
 			<name>src/iotk_os_ucos.c</name>
@@ -66,9 +66,19 @@
 			<locationURI>PARENT-1-PROJECT_LOC/inc/iotk/iotk_pal.h</locationURI>
 		</link>
 		<link>
+			<name>inc/iotk/iotk_pal_crt.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/inc/iotk/iotk_pal_crt.h</locationURI>
+		</link>
+		<link>
 			<name>inc/iotk/iotk_pal_os.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/inc/iotk/iotk_pal_os.h</locationURI>
+		</link>
+		<link>
+			<name>inc/iotk/iotk_pal_osi.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/inc/iotk/iotk_pal_osi.h</locationURI>
 		</link>
 		<link>
 			<name>inc/iotk/iotk_pal_socket.h</name>

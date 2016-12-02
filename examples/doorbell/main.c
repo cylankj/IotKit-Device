@@ -30,6 +30,7 @@
 
 #include "common.h"
 #include "sl.h"
+#include "fh8610.h"
 
 #define FLAG_AP_PREPARING           0x00000001
 #define FLAG_AP_STANDBY             0x00000002
@@ -241,7 +242,7 @@ static void _app_on_iotk_disconnected(struct APP_CONTEXT *d, struct IOTK_EVENT *
     // clear all flags
     d->flags = 0;
 
-    LOGLI("iotk disconnected");
+    LOGLI("iotk disconnected: code=%d", e->u.disconnect.err_code);
 }
 
 static void _app_on_iotk_p2p_setup(struct APP_CONTEXT *c, struct IOTK_EVENT *e)
@@ -251,8 +252,13 @@ static void _app_on_iotk_p2p_setup(struct APP_CONTEXT *c, struct IOTK_EVENT *e)
     c->last_p2p_caller[IOTK_CID_LENGTH] = 0;
     c->last_p2p_call_id = e->u.p2p_setup.call_id;
 
+    // boot up fh8610
+    iotk_cc3200_fh8610_power_set(IOTK_FH8610_BOOT_UP);
+
     // accept p2p
     iotk_p2p_accept_call(e->u.p2p_setup.channel, e->u.p2p_setup.peer);
+
+    jfg_rtp_open(e->u.p2p_setup.channel);
 
     // response
     c->server->p2p_setup_ack(&c->server->iunknown, e->u.p2p_setup.seq + 1, e->u.p2p_setup.caller);
@@ -267,6 +273,8 @@ static void _app_on_iotk_p2p_disconnect(struct APP_CONTEXT *c, struct IOTK_EVENT
 {
     c->last_p2p_caller[0] = 0;
     c->last_p2p_call_id = 0;
+
+    jfg_rtp_close();
 }
 
 static void _app_on_iotk_event(void *sender, struct IOTK_EVENT *e)
@@ -282,6 +290,7 @@ static void _app_on_iotk_event(void *sender, struct IOTK_EVENT *e)
     case IOTK_EVENT_DISCONNECTED:
         _app_on_iotk_disconnected(c, e);
         break;
+
     case IOTK_EVENT_LOGIN_ACK:
         _app_on_login_ack(c, e);
         break;
@@ -359,12 +368,37 @@ static void _app_on_iotk_p2p_event(struct IOTK_P2P_EVENT *e)
 
 static void _app_on_iotk_p2p_data_incoming(const void *data, unsigned int len)
 {
-    //LOGLV("p2p incoming data...");
+    jfg_rtp_write(data, len);
 }
 
 static int _app_on_iotk_p2p_data_outgoing(int (*p2p_send)(const char *buf, unsigned int len))
 {
-    //LOGLV("p2p outgoing data...");
+#define P2P_MTU_BUFFER_SIZE  1500
+    static unsigned int _buffer_len = 0;
+    static char _buffer[P2P_MTU_BUFFER_SIZE];
+    int sent;
+    int res = _buffer_len;
+
+    if (res == 0)
+    {
+        res = jfg_rtp_read(_buffer, P2P_MTU_BUFFER_SIZE);
+    }
+
+    if (res > 0)
+    {
+        sent = p2p_send(_buffer, res);
+
+        if (sent == res)
+        {
+            _buffer_len = 0;
+            return res;
+        }
+        else
+        {
+            _buffer_len = res;
+        }
+    }
+
     return 0;
 }
 

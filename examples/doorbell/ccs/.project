@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>iotk_pal</project>
+		<project>iotk</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -45,6 +46,16 @@
 			<name>common.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/common.h</locationURI>
+		</link>
+		<link>
+			<name>fh8610.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/fh8610.c</locationURI>
+		</link>
+		<link>
+			<name>fh8610.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/fh8610.h</locationURI>
 		</link>
 		<link>
 			<name>gpio_if.c</name>
@@ -100,6 +111,11 @@
 			<name>sl.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/sl.h</locationURI>
+		</link>
+		<link>
+			<name>spi_protocol.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/spi_protocol.h</locationURI>
 		</link>
 		<link>
 			<name>startup_ccs.c</name>

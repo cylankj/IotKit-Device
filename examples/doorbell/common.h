@@ -34,7 +34,7 @@
 #define CONFIG_CFG_FILE_SIZE_ALIGN          1024
 
 #ifndef HALT
-#define HALT()            		for (;;)
+#define HALT()            		        for (;;)
 #endif
 
 #ifndef ASSERT
@@ -47,13 +47,13 @@
     } while (0)
 #endif
 
-#define SPAWN_TASK_PRIORITY     9
-#define MAIN_TASK_STACK_SIZE    2048
-#define MAIN_TASK_PRIORITY      1
-#define SL_STOP_TIMEOUT         200
-#define UNUSED(x)               ((x) = (x))
-#define SUCCESS                 0
-#define FAILURE                 -1
+#define SPAWN_TASK_PRIORITY             9
+#define MAIN_TASK_STACK_SIZE            2048
+#define MAIN_TASK_PRIORITY              1
+#define SL_STOP_TIMEOUT                 200
+#define UNUSED(x)                       ((x) = (x))
+#define SUCCESS                         0
+#define FAILURE                         -1
 
 
 #ifndef FLAG_SET
@@ -89,6 +89,7 @@
 #endif
 
 extern void platform_init(void);
+extern void platform_spi_init(void);
 extern void application_main(void *p);
 
 #endif // __COMMON__H__

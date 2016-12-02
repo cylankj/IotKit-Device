@@ -371,6 +371,7 @@ static int _app_on_iotk_p2p_data_outgoing(int (*p2p_send)(const char *buf, unsig
 static void _app_p2p_task(void *unused)
 {
     UNUSED(unused);
+    LOGLI("p2p task running");
     for (;;)
     {
         iotk_p2p_runloop();
@@ -380,6 +381,7 @@ static void _app_p2p_task(void *unused)
 static void _app_spi_task(void *unused)
 {
     UNUSED(unused);
+    LOGLI("spi task running");
     iotk_cc3200_fh8610_module_task_loop();
 }
 
@@ -396,7 +398,7 @@ static void _app_p2p_get_timestamp(struct timeval *tv)
 
 static void _app_on_sl_event(void *p)
 {
-	struct APP_CONTEXT *c = app_get();
+    struct APP_CONTEXT *c = app_get();
     struct SL_EVENT_MSG *e = (struct SL_EVENT_MSG *)p;
 
     //LOGLI("on sl event = %d", e->id);
@@ -409,31 +411,31 @@ static void _app_on_sl_event(void *p)
     case SL_EVENT_STA_IP_RELEASED:
         break;
     case SL_EVENT_WLAN_CONNECTED:
-    	FLAG_SET(FLAG_STA_CONNECTED, c->flags);
-    	LOGLI("Connected to AP: BSSID=%02X:%02X:%02X:%02X:%02X:%02X",
-    			e->u.wlan_connected.bssid[0],
-    			e->u.wlan_connected.bssid[1],
-    			e->u.wlan_connected.bssid[2],
-    			e->u.wlan_connected.bssid[3],
-    			e->u.wlan_connected.bssid[4],
-    			e->u.wlan_connected.bssid[5]);
+        FLAG_SET(FLAG_STA_CONNECTED, c->flags);
+        LOGLI("Connected to AP: BSSID=%02X:%02X:%02X:%02X:%02X:%02X",
+                e->u.wlan_connected.bssid[0],
+                e->u.wlan_connected.bssid[1],
+                e->u.wlan_connected.bssid[2],
+                e->u.wlan_connected.bssid[3],
+                e->u.wlan_connected.bssid[4],
+                e->u.wlan_connected.bssid[5]);
         break;
     case SL_EVENT_WLAN_USER_INITIATED_DISCONNECT:
-    	FLAG_CLR(FLAG_STA_CONNECTED | FLAG_IP_ACQUIRED, c->flags);
-    	break;
+        FLAG_CLR(FLAG_STA_CONNECTED | FLAG_IP_ACQUIRED, c->flags);
+        break;
     case SL_EVENT_WLAN_DISCONNECT:
-    	FLAG_CLR(FLAG_STA_CONNECTED | FLAG_IP_ACQUIRED, c->flags);
+        FLAG_CLR(FLAG_STA_CONNECTED | FLAG_IP_ACQUIRED, c->flags);
         break;
     case SL_EVENT_WLAN_IP_ACQUIRED:
-    	if (!FLAG_ISSET(FLAG_IP_ACQUIRED, c->flags))
-    	{
-        	FLAG_SET(FLAG_IP_ACQUIRED, c->flags);
-        	LOGLI("IP Acquired: IP=%d.%d.%d.%d Gateway=%d.%d.%d.%d DNS=%d.%d.%d.%d",
-        			SPLIT_IP(e->u.wlan_ip.ip_be),
-        			SPLIT_IP(e->u.wlan_ip.gw_be),
-        			SPLIT_IP(e->u.wlan_ip.dns_be));
-        	iotk_start();
-    	}
+        if (!FLAG_ISSET(FLAG_IP_ACQUIRED, c->flags))
+        {
+            FLAG_SET(FLAG_IP_ACQUIRED, c->flags);
+            LOGLI("IP Acquired: IP=%d.%d.%d.%d Gateway=%d.%d.%d.%d DNS=%d.%d.%d.%d",
+                    SPLIT_IP(e->u.wlan_ip.ip_be),
+                    SPLIT_IP(e->u.wlan_ip.gw_be),
+                    SPLIT_IP(e->u.wlan_ip.dns_be));
+            iotk_start();
+        }
         break;
     }
 
@@ -492,14 +494,13 @@ void application_main(void *unused)
     server_addr = cfg_get_ptr(CFG_ID_MSG_SERVER_ADDR);
     iotk_cfg_set(IOTK_CFG_SERVER_ADDR, strlen(server_addr), server_addr);
     iotk_cfg_set(IOTK_CFG_EVENT_CALLBACK, sizeof(void *), _app_on_iotk_event);
-    //iotk_start();
 
     // get and save server interface
     app_get()->server = (struct IOTK_INTERFACE_DEVICE *)
         iotk_query_interface(&iotk_iid_device);
 
-	// create spi thread
-    iotk_task_create(_app_spi_task, NULL, 512, NULL, 1, &spi_task);
+    // create spi thread
+    iotk_task_create(_app_spi_task, NULL, 2048, NULL, 1, &spi_task);
 
     //
     // initialize p2p component
@@ -511,9 +512,9 @@ void application_main(void *unused)
     iotk_p2p_setopt(IOTK_P2P_OPT_DATA_INCOMING_CALLBACK, _app_on_iotk_p2p_data_incoming);
 
     // create p2p thread
-    iotk_task_create(_app_p2p_task, NULL, 512, NULL, 1, &p2p_task);
+    iotk_task_create(_app_p2p_task, NULL, 2048, NULL, 1, &p2p_task);
 
-    for (;;)    
+    for (;;)
     {
         iotk_run(1000);
         LOGLD("iotk running...");

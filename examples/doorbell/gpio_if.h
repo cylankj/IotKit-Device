@@ -65,6 +65,8 @@ extern void GPIO_IF_LedOn(char ledNum);
 extern void GPIO_IF_LedOff(char ledNum);
 extern unsigned char GPIO_IF_LedStatus(unsigned char ucGPIONum);
 extern void GPIO_IF_LedToggle(unsigned char ucLedNum);
+
+extern unsigned long GPIOBase(int gpio_num);
 //*****************************************************************************
 //
 // Mark the end of the C bindings section for C++ compilers.

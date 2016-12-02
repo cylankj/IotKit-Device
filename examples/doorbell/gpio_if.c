@@ -429,4 +429,16 @@ GPIO_IF_Get(unsigned char ucPin,
     return ucGPIOValue;
 }
 
+unsigned long GPIOBase(int gpio_num)
+{
+	static unsigned long GPIO_BASE_TABLE[] =
+	{
+	    GPIOA0_BASE,
+	    GPIOA1_BASE,
+	    GPIOA2_BASE,
+	    GPIOA3_BASE
+	};
+	return GPIO_BASE_TABLE[gpio_num / 8];
+}
+
 #endif // cc3200

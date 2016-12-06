@@ -40,6 +40,7 @@
 #include <string.h>
 
 // Driverlib includes
+#ifdef cc3200
 #include "hw_ints.h"
 #include "hw_memmap.h"
 #include "hw_uart.h"
@@ -377,3 +378,4 @@ void UDMASetupTransfer(unsigned long ulChannel, unsigned long ulMode,
 //! @}
 //
 //*****************************************************************************
+#endif // cc3200

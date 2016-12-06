@@ -1,4 +1,6 @@
 set ( name "doorbell_demo" )
 file ( GLOB sources *.c *.h )
+include_directories ( ../../include )
+include_directories ( ../../iotk_pal/inc )
 add_executable ( ${name} ${sources} )
-target_link_libraries ( ${name} iotk-lib iotk_pal-lib msgpack )
+target_link_libraries ( ${name} iotk-lib iotk_pal-lib msgpack ws2_32 )

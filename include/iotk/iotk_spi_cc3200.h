@@ -23,6 +23,8 @@ struct IOTK_CC3200_FH8610_MODULE_CONFIG
 
     unsigned long peripheral;
     unsigned long bitrate;
+    unsigned long mode;
+    unsigned long sub_mode;
     unsigned int  spi_transfer_timeout;
 
     unsigned char fh8610_power_gpio;

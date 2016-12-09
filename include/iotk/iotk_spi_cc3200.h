@@ -39,6 +39,7 @@ struct IOTK_CC3200_FH8610_MODULE_CONFIG
     unsigned int  fh8610_boot_delay;
 
     unsigned char fh8610_spi_cs_gpio_init_level;
+    unsigned char fh8610_spi_cs_gpio;
     unsigned char fh8610_spi_cs_gpio_pin;
     unsigned int  fh8610_spi_cs_gpio_port;
 };

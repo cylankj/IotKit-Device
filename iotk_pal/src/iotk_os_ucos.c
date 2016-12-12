@@ -1,6 +1,6 @@
 #if defined(__UCOS__)
 #include "ucos_ii.h"
-#include "osi/osi_ext.h"
+#include "iotk/iotk_pal_os.h"
 
 #ifndef NULL
 #define NULL    ((void *)0)
@@ -320,15 +320,7 @@ void iotk_task_delete(iotk_task_t* pTaskHandle)
 
 void iotk_sleep(unsigned int MilliSecs)
 {
-    unsigned char hours, minutes, seconds;
-    unsigned short milli;
-
-    hours = MilliSecs / 1000 / 60 / 60;
-    minutes = (MilliSecs / 1000 / 60) % 60;
-    seconds = (MilliSecs / 1000) % 60;
-    milli = MilliSecs % 1000;
-
-    OSTimeDlyHMSM(hours, minutes, seconds, milli);
+    OSTimeDly(((((MilliSecs) * OS_TICKS_PER_SEC) / 1000) > 0) ? (((MilliSecs) * OS_TICKS_PER_SEC) / 1000) : 1);
 }
 
 #endif // #ifdef __UCOS__

@@ -67,7 +67,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/iotk_os_windows.c|src/iotk_os_ucos.c|src/iotk_os_linux.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/iotk_socket_windows.c|src/iotk_socket_simplelink.c|src/iotk_os_windows.c|src/iotk_os_ucos.c|src/iotk_os_linux.c|src/iotk_crt_windows.c|src/iotk_crt_simplelink.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

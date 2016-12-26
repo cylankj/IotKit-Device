@@ -12,7 +12,9 @@
 
 #define IOTK_TEST_CID_OLD                   "200000000001"
 
+#define SSID_NAME                           "iotk_demo"
 #define SECURITY_TYPE                       SL_SEC_TYPE_OPEN
+#define SECURITY_KEY                        ""
 
 #define CONFIG_SPI_BITRATE                  3375000
 #define CONFIG_SPI_TIMEOUT                  1000
@@ -28,8 +30,6 @@
 #define GPIO_FH_SPI_PIN                     PIN_53
 #define GPIO_FH_SPI_INIT_LEVEL              0
 
-#define SSID_NAME               "iotk_demo"
-#define SECURITY_KEY            ""
 
 #define CONFIG_CFG_FILE_SIZE_ALIGN          1024
 

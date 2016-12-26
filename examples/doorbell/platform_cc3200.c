@@ -132,19 +132,6 @@ static void _platform_spi_delegate(int delegate_event)
     }
 }
 
-unsigned long GPIOBase(int gpio_num)
-{
-	static unsigned long GPIO_BASE_TABLE[] =
-	{
-	    GPIOA0_BASE,
-	    GPIOA1_BASE,
-	    GPIOA2_BASE,
-	    GPIOA3_BASE
-	};
-	return GPIO_BASE_TABLE[gpio_num / 8];
-}
-
-
 static void _platform_spi_init(void)
 {
     struct IOTK_CC3200_FH8610_MODULE_CONFIG spi_cfg;

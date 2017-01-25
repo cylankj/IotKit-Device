@@ -152,7 +152,7 @@ iotk_res_t iotk_lock_release(iotk_lock_t* pLockObj)
 struct OSI_MSGQ
 {
     rt_mq_t mq;
-    size_t msg_size;
+    rt_size_t msg_size;
 };
 
 iotk_res_t iotk_msgq_create(iotk_msgq_t *pMsgQ, char *pMsgQName, unsigned long MsgSize, unsigned long MaxMsgs)
@@ -173,9 +173,9 @@ iotk_res_t iotk_msgq_create(iotk_msgq_t *pMsgQ, char *pMsgQName, unsigned long M
     }
 
     q->msg_size = MsgSize;
-    q->queue = rt_mq_create(pMsgQName ? pMsgQName : "iotk_msgq", MsgSize, MaxMsgs, RT_IPC_FLAG_FIFO);
+    q->mq = rt_mq_create(pMsgQName ? pMsgQName : "iotk_msgq", MsgSize, MaxMsgs, RT_IPC_FLAG_FIFO);
 
-    if (NULL == q->queue)
+    if (RT_NULL == q->mq)
     {
         rt_free(q);
         return IOTK_RES_OPERATION_FAILED;

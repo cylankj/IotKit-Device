@@ -12,7 +12,7 @@ src = Glob(LIB_ROOT + '/src/*.c')
 
 path_inc = [LIB_ROOT + '/inc/']
 
-cflags = ' -D__FH8620__ '
+cflags = ' -D__FH8620__ -DUSE_RTTHREAD '
 
 group = DefineGroup('iotk_pal', src, depend = ['RT_USING_SPI_DEMO'], LOCAL_CPPPATH = path_inc, CCFLAGS = cflags)
 

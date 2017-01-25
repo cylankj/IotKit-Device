@@ -140,156 +140,135 @@ iotk_res_t iotk_lock_release(iotk_lock_t* pLockObj)
 {
     rt_err_t res;
 
-	if (RT_NULL == pLockObj)
-	{
-		return IOTK_RES_INVALID_PARAMS;
-	}
+    if (RT_NULL == pLockObj)
+    {
+        return IOTK_RES_INVALID_PARAMS;
+    }
 
     res = rt_mutex_release(*(rt_mutex_t *)pLockObj);
     return RT_EOK == res ? IOTK_RES_OK : IOTK_RES_OPERATION_FAILED;
 }
 
-#if 0
-iotk_res_t iotk_msgq_create(iotk_msgq_t *pMsgQ,
-                              char *pMsgQName,
-                              unsigned long MsgSize,
-                              unsigned long MaxMsgs)
+struct OSI_MSGQ
 {
     rt_mq_t mq;
+    size_t msg_size;
+};
 
-	if (RT_NULL == pMsgQ)
-	{
-		return IOTK_RES_INVALID_PARAMS;
-	}
+iotk_res_t iotk_msgq_create(iotk_msgq_t *pMsgQ, char *pMsgQName, unsigned long MsgSize, unsigned long MaxMsgs)
+{
+    iotk_res_t res;
+    struct OSI_MSGQ *q;
 
-    mq = rt_mq_create(pMsgQName ? pMsgQName : "iotk_mq", MsgSize, MaxMsgs, RT_IPC_FLAG_FIFO);
-
-    if (mq != RT_NULL)
+    if (pMsgQ == RT_NULL || MsgSize == 0 || MaxMsgs == 0)
     {
-        *pMsgQ = (iotk_msgq_t)mq;
-        return IOTK_RES_OK;
+        return IOTK_RES_INVALID_PARAMS;
     }
 
+    q = (struct OSI_MSGQ *)rt_malloc(sizeof(struct OSI_MSGQ));
+
+    if (RT_NULL == q)
+    {
+        return IOTK_RES_MEMORY_ALLOCATION_FAILURE;
+    }
+
+    q->msg_size = MsgSize;
+    q->queue = rt_mq_create(pMsgQName ? pMsgQName : "iotk_msgq", MsgSize, MaxMsgs, RT_IPC_FLAG_FIFO);
+
+    if (NULL == q->queue)
+    {
+        rt_free(q);
+        return IOTK_RES_OPERATION_FAILED;
+    }
+
+    *pMsgQ = q;
+    return IOTK_RES_OK;
+}
+
+iotk_res_t iotk_msgq_write(iotk_msgq_t* pMsgQ, void* pMsg, iotk_time_t Timeout)
+{
+    rt_err_t res;
+    struct OSI_MSGQ *q;
+
+    if (RT_NULL == pMsgQ)
+    {
+        return IOTK_RES_INVALID_PARAMS;
+    }
+
+    q = *(struct OSI_MSGQ **)pMsgQ;
+
+    for (;;)
+    {
+        res = rt_mq_send(q->mq, pMsg, q->msg_size);
+        if (res == RT_EOK)
+        {
+            return IOTK_RES_OK;
+        }
+        if (res == RT_ETIMEOUT)
+        {
+            if (Timeout == 0)
+            {
+                return IOTK_RES_TIMEOUT;
+            }
+            else
+            {
+                rt_thread_sleep(rt_tick_from_millisecond(5));
+                Timeout -= Timeout > 5 ? 5 : Timeout;
+                continue;
+            }
+        }
+
+        return IOTK_RES_OPERATION_FAILED;
+    }
+}
+
+iotk_res_t iotk_msgq_read(iotk_msgq_t* pMsgQ, void* pMsg, iotk_time_t Timeout)
+{
+    rt_err_t res;
+    struct OSI_MSGQ *q;
+
+    if (RT_NULL == pMsgQ)
+    {
+        return IOTK_RES_INVALID_PARAMS;
+    }
+
+    q = *(struct OSI_MSGQ **)pMsgQ;
+
+    if (IOTK_WAIT_FOREVER == Timeout)
+    {
+        res = rt_mq_recv(q->mq, pMsg, q->msg_size, RT_WAITING_FOREVER);
+    }
+    else
+    {
+        res = rt_mq_recv(q->mq, pMsg, q->msg_size, rt_tick_from_millisecond(Timeout));
+    }
+
+    if (res == RT_ETIMEOUT) return IOTK_RES_TIMEOUT;
+    if (res == RT_EOK) return IOTK_RES_OK;
     return IOTK_RES_OPERATION_FAILED;
 }
 
 iotk_res_t iotk_msgq_delete(iotk_msgq_t* pMsgQ)
 {
-    OSI_MSGQ *q;
+    rt_err_t res;
+    struct OSI_MSGQ *q;
 
     if (RT_NULL == pMsgQ)
     {
         return IOTK_RES_INVALID_PARAMS;
     }
 
-    q = *(OSI_MSGQ **)pMsgQ;
+    q = *(struct OSI_MSGQ **)pMsgQ;
+    res = rt_mq_delete(q->mq);
 
-    if (RT_NULL == q)
+    if (RT_EOK == res)
     {
-        return IOTK_RES_INVALID_PARAMS;
+        rt_free(q);
+        return IOTK_RES_OK;
     }
 
-    if (q->queue != RT_NULL)
-    {
-        CloseHandle(q->queue);
-    }
-
-    if (q->guard != RT_NULL)
-    {
-        CloseHandle(q->guard);
-    }
-
-    free(q);
-
-    return IOTK_RES_OK;
+    return IOTK_RES_OPERATION_FAILED;
 }
-
-iotk_res_t iotk_msgq_write(iotk_msgq_t* pMsgQ, void* pMsg , iotk_time_t Timeout)
-{
-    DWORD err;
-    LONG previous = 0;
-    char *wpointer = RT_NULL;
-
-    OSI_MSGQ *q;
-    iotk_res_t res = IOTK_RES_FAILURE;
-
-    if (RT_NULL == pMsgQ)
-    {
-        return IOTK_RES_INVALID_PARAMS;
-    }
-
-    q = *(OSI_MSGQ **)pMsgQ;
-
-    if (RT_NULL == q)
-    {
-        return IOTK_RES_INVALID_PARAMS;
-    }
-
-    err = WaitForSingleObject(q->guard, INFINITE);
-    if (WAIT_OBJECT_0 == err)
-    {
-        if (ReleaseSemaphore(q->queue, 1, &previous))
-        {
-            wpointer = (char *)&q[1] + q->wpos * q->msg_size;
-            memcpy(wpointer, pMsg, q->msg_size);
-            q->wpos = (++q->wpos) % q->max_msgs;
-            ++q->count;
-            res = IOTK_RES_OK;
-        }
-    }
-    ReleaseMutex(q->guard);
-    return res;
-}
-
-iotk_res_t iotk_msgq_read(iotk_msgq_t* pMsgQ, void* pMsg , iotk_time_t Timeout)
-{
-    DWORD err;
-    char *rpointer = RT_NULL;
-
-    OSI_MSGQ *q;
-    iotk_res_t res = IOTK_RES_FAILURE;
-
-    if (RT_NULL == pMsgQ)
-    {
-        return IOTK_RES_INVALID_PARAMS;
-    }
-
-    q = *(OSI_MSGQ **)pMsgQ;
-
-    if (RT_NULL == q)
-    {
-        return IOTK_RES_INVALID_PARAMS;
-    }
-
-    err = WaitForSingleObject(q->queue, Timeout);
-
-    if (WAIT_TIMEOUT == err)
-    {
-        return IOTK_RES_TIMEOUT;
-    }
-    else if (0 != err)
-    {
-        return IOTK_RES_FAILURE;
-    }
-
-    err = WaitForSingleObject(q->guard, INFINITE);
-
-    if (0 != err)
-    {
-        // this should not be happend!!!
-        return IOTK_RES_FAILURE;
-    }
-
-    rpointer = (char *)&q[1] + q->rpos * q->msg_size;
-    memcpy(pMsg, rpointer, q->msg_size);
-    q->rpos = (++q->rpos) % q->max_msgs;
-    --q->count;
-
-    ReleaseMutex(q->guard);
-
-    return IOTK_RES_OK;
-}
-#endif
 
 void iotk_sleep(unsigned int MilliSecs)
 {
@@ -297,22 +276,3 @@ void iotk_sleep(unsigned int MilliSecs)
 }
 
 #endif // #ifdef USE_RTTHREAD
-
-#if 0
-//////////////////////////////////////////////////////////////////////////
-//
-// MsgQ
-//
-typedef struct OSI_MSGQ
-{
-    pthread_mutex_t guard;
-    sem_t queue;
-    int rpos;
-    int wpos;
-    size_t count;
-    size_t msg_size;
-    size_t max_msgs;
-} OSI_MSGQ;
-
-#endif // #ifdef USE_RTTHREAD
-

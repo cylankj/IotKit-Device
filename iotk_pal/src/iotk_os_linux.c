@@ -7,9 +7,10 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <semaphore.h>
+#include <stdio.h>
 
-#include "osi/osi_ext.h"
-
+//#include "osi/osi_ext.h"
+#include "iotk/iotk_pal.h"
 //////////////////////////////////////////////////////////////////////////
 //
 // MsgQ
@@ -35,6 +36,7 @@ static struct timespec *timespec_delay(struct timespec *t, unsigned int ms)
     usec = (ms % 1000) * 1000 + now.tv_usec;
     t->tv_sec = now.tv_sec + ms / 1000 + usec / 1000000;
     t->tv_nsec = usec % 1000000 * 1000;
+    return t;
 }
 
 iotk_res_t iotk_msgq_create(iotk_msgq_t *pMsgQ,
@@ -134,13 +136,15 @@ iotk_res_t iotk_msgq_write(iotk_msgq_t* pMsgQ, void* pMsg , iotk_time_t Timeout)
     err = pthread_mutex_timedlock(&q->guard, timespec_delay(&delay, Timeout));
     if (0 == err)
     {
-        if (0 == sem_timedwait(&q->queue, timespec_delay(&delay, Timeout)))
+        //if (0 == sem_timedwait(&q->queue, timespec_delay(&delay, Timeout)))
         {
             wpointer = (char *)&q[1] + q->wpos * q->msg_size;
             memcpy(wpointer, pMsg, q->msg_size);
             q->wpos = (++q->wpos) % q->max_msgs;
             ++q->count;
             res = IOTK_RES_OK;
+
+			sem_post(&q->queue);
         }
     }
     pthread_mutex_unlock(&q->guard);
@@ -167,16 +171,18 @@ iotk_res_t iotk_msgq_read(iotk_msgq_t* pMsgQ, void* pMsg , iotk_time_t Timeout)
     {
         return IOTK_RES_INVALID_PARAMS;
     }
-
+    //printf("q->queue = %d\n", q->queue);
     err = sem_timedwait(&q->queue, timespec_delay(&delay, Timeout));
-
-    if (ETIMEDOUT == err)
+    //printf("err = %d, errno = %d\n", err, errno);
+    if(-1 == err)
     {
-        return IOTK_RES_TIMEOUT;
-    }
-    else if (0 != err)
-    {
-        return IOTK_RES_FAILURE;
+		if (ETIMEDOUT == errno)
+		{
+			return IOTK_RES_TIMEOUT;
+		}
+		else{
+			return IOTK_RES_FAILURE;
+		}
     }
 
     err = pthread_mutex_lock(&q->guard);
@@ -225,7 +231,7 @@ iotk_res_t iotk_event_create(iotk_event_t* pSyncObj)
         return IOTK_RES_MEMORY_ALLOCATION_FAILURE;
     }
 
-    err = sem_init(&obj->handle, 0, 1);
+    err = sem_init(&obj->handle, 0, 0);
 
     if (0 != err)
     {
@@ -310,7 +316,14 @@ struct OSI_TASK_PARAMS
 void *osi_TaskWrapper(void *p)
 {
     struct OSI_TASK_PARAMS *params = (struct OSI_TASK_PARAMS *)p;
-    params->pEntry(params->pValue);
+	if (params->pEntry)
+	{
+		params->pEntry(params->pValue);
+	}
+	else{
+		printf("pEntry is null");
+	}
+	
     free(params);
     return NULL;
 }
@@ -344,7 +357,7 @@ iotk_res_t iotk_task_create(P_IOTK_TASK_ENTRY pEntry, const signed char * const 
 
     params->pEntry = pEntry;
     params->pValue = pvParameters;
-    err = pthread_create(&hThread, NULL, IotkTaskWrapper, params);
+    err = pthread_create(&hThread, NULL, osi_TaskWrapper, params);
     if (0 == err)
     {
         pthread_detach(hThread);
